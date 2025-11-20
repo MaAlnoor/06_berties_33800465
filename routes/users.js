@@ -34,7 +34,6 @@ router.post('/registered', function (req, res, next) {
 router.get('/login', function (req, res, next) {
     res.render('login.ejs')
 })
-
 router.post('/loggedin', function (req, res, next) {
     let sqlquery = "SELECT * FROM users WHERE username = ?"
     db.query(sqlquery, [req.body.username], (err, results) => {
@@ -42,30 +41,56 @@ router.post('/loggedin', function (req, res, next) {
             next(err)
         }
         else if (results.length === 0) {
+
+            // Log failed login: username does not exist
+            let auditFail = "INSERT INTO audit_log (username, status) VALUES (?, ?)"
+            db.query(auditFail, [req.body.username, "FAIL"], () => {})
+
             res.send("Invalid username or password.")
         }
         else {
 
-            // Get the hashed password from the database
             let hashedPassword = results[0].hashedPassword
 
-            // Compare the password supplied with the password in the database
             bcrypt.compare(req.body.password, hashedPassword, function(err, result) {
                 if (err) {
                     res.send("An error occurred.")
                 }
+
                 else if (result == true) {
+
+                    // Log successful login
+                    let auditSuccess = "INSERT INTO audit_log (username, status) VALUES (?, ?)"
+                    db.query(auditSuccess, [req.body.username, "SUCCESS"], () => {})
+
                     res.send("Welcome back " + results[0].first_name + " " + results[0].last_name + "!")
                 }
                 else {
+
+                    // Log failed login: bad password
+                    let auditFail = "INSERT INTO audit_log (username, status) VALUES (?, ?)"
+                    db.query(auditFail, [req.body.username, "FAIL"], () => {})
+
                     res.send("Invalid username or password.")
                 }
             })
-
         }
     })
-    
-}) 
+})
+
+router.get('/audit', function (req, res, next) {
+    let sqlquery = "SELECT * FROM audit_log"
+
+    db.query(sqlquery, (err, result) => {
+        if (err) {
+            next(err)
+        }
+        else {
+            res.render('audit.ejs', { auditLog: result })
+        }
+    })
+})
+
 
 // Export the router object so index.js can access it
 module.exports = router

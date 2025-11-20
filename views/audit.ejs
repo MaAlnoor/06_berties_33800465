@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <title><%=shopData.shopName%> Audit Log</title>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+  </head>
+  <body>
+    <h1><%=shopData.shopName%> Audit Log</h1>
+
+    <table border="1" cellpadding="8">
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Status</th>
+      </tr>
+
+      <% auditLog.forEach(function(entry){ %>
+        <tr>
+          <td><%= entry.id %></td>
+          <td><%= entry.username %></td>
+          <td><%= entry.status %></td>
+        </tr>
+      <% }) %>
+    </table>
+
+  </body>
+</html>
