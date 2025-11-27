@@ -6,12 +6,23 @@ const { check, validationResult } = require('express-validator');
 
 
 const redirectLogin = (req, res, next) => {
-    if (!req.session.userId ) {
-      res.redirect('../users/login') // redirect to the login page
-    } else { 
-        next (); // move to the next middleware function
+    if (!req.session.userId) {
+
+        // Detect if running on Goldsmiths server (URL contains /usr/)
+        if (req.originalUrl.startsWith('/usr/')) {
+            const basePath = '/' + req.originalUrl
+                .split('/')
+                .filter(Boolean)
+                .slice(0, 2)
+                .join('/');
+            return res.redirect(basePath + '/users/login');
+        }
+
+        // Localhost fallback
+        return res.redirect('/users/login');
     } 
-}
+    next();
+};
 
 router.get('/register', function (req, res, next) {
     res.render('register.ejs')
