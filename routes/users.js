@@ -3,6 +3,15 @@ const express = require("express")
 const router = express.Router()
 const bcrypt = require('bcrypt')
 
+
+const redirectLogin = (req, res, next) => {
+    if (!req.session.userId ) {
+      res.redirect('/users/login') // redirect to the login page
+    } else { 
+        next (); // move to the next middleware function
+    } 
+}
+
 router.get('/register', function (req, res, next) {
     res.render('register.ejs')
 })
@@ -58,6 +67,8 @@ router.post('/loggedin', function (req, res, next) {
                 }
 
                 else if (result == true) {
+                    // Save user session here, when login is successful
+                    req.session.userId = req.body.username;
 
                     // Log successful login
                     let auditSuccess = "INSERT INTO audit_log (username, status) VALUES (?, ?)"
@@ -78,7 +89,7 @@ router.post('/loggedin', function (req, res, next) {
     })
 })
 
-router.get('/audit', function (req, res, next) {
+router.get('/audit', redirectLogin, function (req, res, next) {
     let sqlquery = "SELECT * FROM audit_log"
 
     db.query(sqlquery, (err, result) => {
@@ -93,4 +104,5 @@ router.get('/audit', function (req, res, next) {
 
 
 // Export the router object so index.js can access it
-module.exports = router
+module.exports = router;
+module.exports.redirectLogin = redirectLogin;

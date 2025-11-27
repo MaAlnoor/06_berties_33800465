@@ -3,6 +3,7 @@ var express = require ('express')
 var ejs = require('ejs')
 const path = require('path')
 var mysql = require('mysql2');
+var session = require ('express-session');
 require('dotenv').config();
 
 // Create the express application object
@@ -33,6 +34,15 @@ const db = mysql.createPool({
 });
 global.db = db;
 
+// Create a session
+app.use(session({
+    secret: 'somerandomstuff',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        expires: 600000
+    }
+}))
 
 // Load the route handlers
 const mainRoutes = require("./routes/main")
