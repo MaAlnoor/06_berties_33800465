@@ -8,19 +8,14 @@ const { check, validationResult } = require('express-validator');
 const redirectLogin = (req, res, next) => {
     if (!req.session.userId) {
 
-        // Detect if running on Goldsmiths server (URL contains /usr/)
-        if (req.originalUrl.startsWith('/usr/')) {
-            const basePath = '/' + req.originalUrl
-                .split('/')
-                .filter(Boolean)
-                .slice(0, 2)
-                .join('/');
-            return res.redirect(basePath + '/users/login');
+        // If on university server, redirect there
+        if (req.headers.host.includes("doc.gold.ac.uk")) {
+            return res.redirect("/usr/442/users/login");
         }
 
-        // Localhost fallback
-        return res.redirect('/users/login');
-    } 
+        // Otherwise you're on localhost
+        return res.redirect("/users/login");
+    }
     next();
 };
 
